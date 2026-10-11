@@ -1,0 +1,10 @@
+{
+  "description": "Discover and rent elegant áo dài and occasion dresses effortlessly through a visually stunning mobile-first platform designed for fashion enthusiasts.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

@@ -1,0 +1,16 @@
+:root {
+  --ivory: #fff9f7;
+  --blush: #f8e8e8;
+  --rose-100: #f1d8d9;
+  --rose-300: #d9a0a6;
+  --rose-500: #b97782;
+  --rose-700: #935b65;
+  --champagne: #f1e2d8;
+  --ink: #3c3335;
+  --muted: #827477;
+  --line: #eadcda;
+  --white: #fffdfc;
+  --shadow: 0 18px 60px rgba(98, 60, 68, 0.12);
+  --serif: "Cormorant Garamond", Georgia, serif;
+  --sans: "Be Vietnam Pro", sans-serif;
+}
