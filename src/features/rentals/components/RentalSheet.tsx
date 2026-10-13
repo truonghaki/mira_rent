@@ -1,3 +1,4 @@
+import {useShop} from "@/hooks/useShop";
 import AButton from "@/components/ui/AdminButton"
 import AIcon from "@/components/ui/AdminIcon"
 import CurrencyInput from "@/components/ui/CurrencyInput"
@@ -14,9 +15,10 @@ export default function RentalSheet({
   onSubmit,
 }: {
   action: RentalAction
-  onClose: () => void
+  onClose: () => void | Promise<void>
   onSubmit: (draft: RentalDraft) => void
 }) {
+  const {busy}=useShop();
   const { draft, setDraft, error, submit } = useRentalForm(action, onSubmit)
   return (
     <div className="overlay admin-modal-overlay" onClick={onClose}>
@@ -108,7 +110,7 @@ export default function RentalSheet({
           <AButton className="button-outline" onClick={onClose}>
             Hủy
           </AButton>
-          <AButton className="primary" type="submit">
+          <AButton className="primary" type="submit" disabled={busy}>
             {action.type === "reserve" ? "Xác nhận đặt" : "Bắt đầu thuê"}
           </AButton>
         </div>

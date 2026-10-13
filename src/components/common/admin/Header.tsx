@@ -1,3 +1,4 @@
+import {useShop} from "@/hooks/useShop";
 import AIcon from "@/components/ui/AdminIcon"
 import AdminBrand from "./Brand"
 export default function AdminHeader({
@@ -7,6 +8,7 @@ export default function AdminHeader({
   setMenu: (open: boolean) => void
   signOut: () => void
 }) {
+  const {services}=useShop();
   return (
     <header>
       <button className="mobile-menu" onClick={() => setMenu(true)}>
@@ -14,7 +16,7 @@ export default function AdminHeader({
       </button>
       <AdminBrand />
       <div>
-        <span className="demo-badge">DEMO MODE</span>
+        <span className="demo-badge">{services.mode === "demo" ? "DEMO MODE" : "QUẢN TRỊ"}</span>
         <button className="icon-button" onClick={signOut} title="Đăng xuất">
           <AIcon name="logout" />
         </button>

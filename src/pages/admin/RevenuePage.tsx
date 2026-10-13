@@ -9,6 +9,7 @@ import { useRevenue } from "@/features/revenue/useRevenue"
 import AdminLayout from "@/layouts/AdminLayout"
 import { money } from "@/utils/currency"
 import { useState } from "react"
+import { todayDate } from "@/utils/date"
 
 export default function RevenuePage() {
   const { orders } = useRentals()
@@ -21,8 +22,8 @@ export default function RevenuePage() {
     average,
     series,
   } = useRevenue()
-  const [month, setMonth] = useState(String(new Date().getMonth() + 1))
-  const [year, setYear] = useState(String(new Date().getFullYear()))
+  const [month, setMonth] = useState(String(Number(todayDate().slice(5,7))))
+  const [year, setYear] = useState(todayDate().slice(0,4))
   const [from, setFrom] = useState("")
   const [to, setTo] = useState("")
   const selected = filterRevenueOrders(orders, { month, year, from, to })

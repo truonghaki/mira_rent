@@ -33,14 +33,14 @@ export default function ProductsPage() {
       `/admin/rentals?product=${encodeURIComponent(product.id)}&action=${transition}`,
     )
   }
-  const remove = () => {
+  const remove = async () => {
     if (!deleting) return
     if (!canDeleteProduct({ orders }, deleting.id)) {
       setDeleting(null)
       setToast("Không thể xóa sản phẩm đang có đơn đặt hoặc đang thuê.")
       return
     }
-    deleteProduct(deleting.id)
+    await deleteProduct(deleting.id)
     setDeleting(null)
     setToast("Đã xóa sản phẩm. Lịch sử thuê vẫn được giữ nguyên.")
   }

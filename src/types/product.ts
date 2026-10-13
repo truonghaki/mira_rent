@@ -5,6 +5,8 @@ export interface ProductImage {
   url: string
   name: string
   temporary?: boolean
+  storagePath?: string
+  externalUrl?: string
 }
 
 export interface Product {

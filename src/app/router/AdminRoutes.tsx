@@ -14,19 +14,20 @@ import { useLocation } from "./useLocation"
 import { resolveAdminRoute } from "./admin-routes"
 
 export default function AdminApp() {
-  const { authenticated } = useAuth()
+  const { authenticated, authLoading } = useAuth()
   const location = useLocation()
   const path = location.pathname
   const route = resolveAdminRoute(path)
   const [ready, setReady] = useState(false)
   useEffect(() => {
-    if (!authenticated && path !== "/admin/login")
+    if (!authLoading && !authenticated && path !== "/admin/login")
       navigate("/admin/login", true)
-  }, [authenticated, path])
+  }, [authenticated, authLoading, path])
   useEffect(() => {
     const timer = window.setTimeout(() => setReady(true), 250)
     return () => window.clearTimeout(timer)
   }, [])
+  if (authLoading) return <AdminLoading />;
   if (route.page === "login") return <AdminLogin />
   if (!authenticated) return null
   if (!ready) return <AdminLoading />

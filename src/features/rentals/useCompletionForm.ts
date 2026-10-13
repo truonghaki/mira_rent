@@ -1,3 +1,4 @@
+import {userMessage} from "@/services/supabase/errors";
 import type { RentalOrder } from "@/types/rental"
 import { calendarDays, todayDate } from "@/utils/date"
 import { useEffect, useState, type FormEvent } from "react"
@@ -6,7 +7,7 @@ import { calculateCompletionRevenue, calculateRentalPrice } from "./pricing"
 
 export function useCompletionForm(
   order: RentalOrder,
-  onSubmit: (draft: CompletionDraft) => void,
+  onSubmit: (draft: CompletionDraft) => void | Promise<void>,
 ) {
   const [returnDate, setReturnDate] = useState(todayDate)
   const [charges, setCharges] = useState("0")
@@ -43,7 +44,7 @@ export function useCompletionForm(
         ),
       )
   }, [suggested, charges, discount, manualRevenue])
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault()
     if (!returnDate || returnDate < order.rentalStartDate) {
       setError("Ngày trả thực tế không thể trước ngày bắt đầu.")
@@ -57,13 +58,14 @@ export function useCompletionForm(
       setError("Các khoản tiền phải là số không âm.")
       return
     }
-    onSubmit({
+    setError("");
+    try {await onSubmit({
       actualReturnDate: returnDate,
       additionalCharges: Number(charges),
       discount: Number(discount),
       actualRevenue: Number(revenue),
       notes,
-    })
+    })} catch(error) {setError(userMessage(error))}
   }
   return {
     returnDate,

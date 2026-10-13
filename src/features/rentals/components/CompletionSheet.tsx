@@ -1,3 +1,4 @@
+import {useShop} from "@/hooks/useShop";
 import AButton from "@/components/ui/AdminButton"
 import AIcon from "@/components/ui/AdminIcon"
 import CurrencyInput from "@/components/ui/CurrencyInput"
@@ -18,9 +19,10 @@ export default function CompletionSheet({
 }: {
   product: Product
   order: RentalOrder
-  onClose: () => void
+  onClose: () => void | Promise<void>
   onSubmit: (draft: CompletionDraft) => void
 }) {
+  const {busy}=useShop();
   const {
     returnDate,
     setReturnDate,
@@ -122,7 +124,7 @@ export default function CompletionSheet({
           <AButton className="button-outline" onClick={onClose}>
             Quay lại
           </AButton>
-          <AButton className="primary" type="submit">
+          <AButton className="primary" type="submit" disabled={busy}>
             Xác nhận hoàn tất
           </AButton>
         </div>

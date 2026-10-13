@@ -1,3 +1,4 @@
+import {BackendError,userMessage} from "@/services/supabase/errors";
 import { navigate } from "@/app/router/navigation"
 import { getRentalIntent } from "@/features/rentals/status"
 import { useShop } from "@/hooks/useShop"
@@ -15,22 +16,25 @@ import { useProducts } from "./useProducts"
 
 export function useProductEditor(id?: string) {
   const { products, saveProduct } = useProducts()
-  const { services } = useShop()
+  const { services, databaseProductId, busy } = useShop()
   const existing = products.find((product) => product.id === id)
+  const [productId]=useState(()=>existing?.id || crypto.randomUUID());
+  const [submitError,setSubmitError]=useState("");
   const [form, setForm] = useState(() => createProductForm(existing))
   const [errors, setErrors] = useState<ProductFormErrors>({})
   const images = useProductImages(
     existing?.images || [],
     existing?.coverImage || "",
     services.imageStorage,
+    databaseProductId(productId),
   )
   const update = <K extends keyof ProductFormState,>(
     key: K,
     value: ProductFormState[K],
   ) => setForm((current) => ({ ...current, [key]: value }))
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault()
-    if (images.uploading) return
+    if (images.uploading || busy) return
     const nextErrors = validateProductForm(form, images.images)
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length) return
@@ -38,11 +42,14 @@ export function useProductEditor(id?: string) {
       form,
       images.images,
       images.cover,
-      crypto.randomUUID(),
+      productId,
       new Date().toISOString(),
       existing,
     )
-    saveProduct(product)
+    setSubmitError("");
+    // Keep uploads while an in-flight write may commit, even if this form unmounts.
+    images.commitImages()
+    try { await saveProduct(product) } catch(error) {if(!(error instanceof BackendError && (error.retryable || error.code === "RELOAD_REQUIRED")))images.allowCleanup();setSubmitError(userMessage(error));return}
     images.commitImages()
     queueAdminToast(
       existing ? "Đã lưu thay đổi sản phẩm" : "Đã thêm sản phẩm vào bộ sưu tập",
@@ -54,5 +61,5 @@ export function useProductEditor(id?: string) {
         : "/admin/products",
     )
   }
-  return { existing, form, errors, update, submit, ...images }
+  return { existing, form, errors, update, submit, submitError, busy, ...images }
 }

@@ -1,3 +1,4 @@
+import {useShop} from "@/hooks/useShop";
 import AIcon from "@/components/ui/AdminIcon"
 import type { useProductEditor } from "../useProductEditor"
 type Props = Pick<ReturnType<typeof useProductEditor>, "images" | "cover" | "setCover" | "uploading" | "imageError" | "upload" | "removeImage" | "move" | "errors">
@@ -12,13 +13,13 @@ export default function ProductImageManager({
   move,
   errors,
 }: Props) {
+  const {services}=useShop();
   return (
     <section className="panel image-editor">
       <div>
         <h2>Hình ảnh sản phẩm</h2>
         <p>
-          Ảnh bìa được dùng trên bộ sưu tập. Ảnh tải lên chỉ là URL tạm trong
-          Demo Mode.
+          {services.mode === "demo" ? "Ảnh bìa được dùng trên bộ sưu tập. Ảnh tải lên chỉ là URL tạm trong Demo Mode." : "Ảnh bìa được dùng trên bộ sưu tập. Ảnh tải lên được lưu cùng sản phẩm."}
         </p>
       </div>
       <label className="upload-box">

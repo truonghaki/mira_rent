@@ -1,4 +1,5 @@
 import type { RentalOrder } from "@/types/rental"
+import { todayDate } from "@/utils/date"
 
 export interface RevenueFilters {
   month?: string
@@ -31,11 +32,7 @@ export function ordersInMonth(
 ): RentalOrder[] {
   return completedOrders(orders).filter((order) => {
     if (!order.completedAt) return false
-    const completed = new Date(order.completedAt)
-    return (
-      completed.getMonth() === date.getMonth() &&
-      completed.getFullYear() === date.getFullYear()
-    )
+    return todayDate(new Date(order.completedAt)).slice(0,7) === todayDate(date).slice(0,7)
   })
 }
 
@@ -45,14 +42,13 @@ export function monthlySeries(
   months = 6,
 ): MonthlyRevenue[] {
   return Array.from({ length: months }, (_, index) => {
+    const shopDay = todayDate(now)
     const date = new Date(
-      now.getFullYear(),
-      now.getMonth() - months + 1 + index,
-      1,
+      Date.UTC(Number(shopDay.slice(0,4)), Number(shopDay.slice(5,7)) - months + index, 15, 12),
     )
     const matching = ordersInMonth(orders, date)
     return {
-      label: `T${date.getMonth() + 1}`,
+      label: `T${date.getUTCMonth() + 1}`,
       revenue: sumRevenue(matching),
       count: matching.length,
     }
@@ -64,7 +60,8 @@ export function filterRevenueOrders(
   filters: RevenueFilters,
 ): RentalOrder[] {
   return completedOrders(orders).filter((order) => {
-    const date = order.completedAt?.slice(0, 10) || ""
+    // Live mapper expresses timestamps at the shop offset; keep demo display-day semantics.
+    const date = order.completedAt?.slice(0,10) || ""
     const text =
       `${order.productSnapshot.name} ${order.customerName}`.toLowerCase()
     return (
@@ -84,10 +81,11 @@ export function filterRevenueOrders(
 export function revenueSummary(orders: RentalOrder[], now = new Date()) {
   const completed = completedOrders(orders)
   const thisMonth = ordersInMonth(completed, now)
-  const previous = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const shopDay = todayDate(now)
+  const previous = new Date(Date.UTC(Number(shopDay.slice(0,4)), Number(shopDay.slice(5,7)) - 2, 15, 12))
   const previousOrders = ordersInMonth(completed, previous)
   const annualOrders = completed.filter((order) =>
-    order.completedAt?.startsWith(String(now.getFullYear())),
+    order.completedAt && todayDate(new Date(order.completedAt)).slice(0,4) === shopDay.slice(0,4),
   )
   const total = sumRevenue(completed)
   const currentRevenue = sumRevenue(thisMonth)

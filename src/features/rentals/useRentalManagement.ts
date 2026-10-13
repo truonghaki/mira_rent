@@ -1,7 +1,7 @@
 import { useToast } from "@/hooks/useToast"
 import type { ProductAvailability } from "@/types/product"
 import type { RentalOrder } from "@/types/rental"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import type { RentalAction } from "./types"
 import { useRentals } from "./useRentals"
 import { resolveRentalRequest } from "./requests"
@@ -23,6 +23,7 @@ export function useRentalManagement() {
     requestedProduct?.status || "reserved",
   )
   const [action, setAction] = useState<RentalAction | null>(initialAction)
+  const requestId=useMemo(()=>crypto.randomUUID(),[action]);
   const [cancel, setCancel] = useState<RentalOrder | null>(initialCancel)
   const { toast, setToast } = useToast(2400, true)
   const listed = products.filter((product) => product.status === tab)
@@ -37,6 +38,7 @@ export function useRentalManagement() {
     setToast(message)
   }
   return {
+    requestId,
     products,
     orders,
     reserveProduct,

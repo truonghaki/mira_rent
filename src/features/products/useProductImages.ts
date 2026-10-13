@@ -1,3 +1,4 @@
+import {userMessage} from "@/services/supabase/errors";
 import type { ImageStorageAdapter } from "@/services/contracts"
 import type { ProductImage } from "@/types/product"
 import { useEffect, useRef, useState } from "react"
@@ -7,6 +8,7 @@ export function useProductImages(
   initialImages: ProductImage[],
   initialCover: string,
   storage: ImageStorageAdapter,
+  productId?: string,
 ) {
   const [images, setImages] = useState(initialImages)
   const [cover, setCover] = useState(initialCover)
@@ -22,7 +24,7 @@ export function useProductImages(
       mounted.current = false
       clearTimeout(timer.current)
       for (const image of draftImages.current.values())
-        if (!committed.current) void storage.remove(image.id)
+        if (!committed.current) void storage.remove(image.id).catch(()=>{})
     }
   }, [storage])
   const upload = async (files: FileList | null) => {
@@ -37,7 +39,7 @@ export function useProductImages(
     if (!valid.length) return
     setUploading(true)
     try {
-      const uploaded = await storage.upload(valid)
+      const uploaded = await storage.upload(valid,productId ? {productId} : undefined)
       if (!mounted.current) {
         uploaded.forEach((image) => {
           void storage.remove(image.id)
@@ -50,9 +52,9 @@ export function useProductImages(
         setCover((current) => current || uploaded[0]?.id || "")
         setUploading(false)
       }, 550)
-    } catch {
+    } catch(error) {
       if (mounted.current) {
-        setImageError("Chỉ hỗ trợ ảnh JPG, PNG hoặc WEBP.")
+        setImageError(userMessage(error))
         setUploading(false)
       }
     }
@@ -79,6 +81,13 @@ export function useProductImages(
       setImages((current) => reorderImages(current, index, direction)),
     commitImages: () => {
       committed.current = true
+    },
+    allowCleanup: () => {
+      committed.current = false
+      if(!mounted.current) {
+        for(const image of draftImages.current.values())void storage.remove(image.id).catch(()=>{})
+        draftImages.current.clear()
+      }
     },
   }
 }

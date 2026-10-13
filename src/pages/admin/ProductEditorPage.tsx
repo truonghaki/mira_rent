@@ -7,7 +7,7 @@ import { useProductEditor } from "@/features/products/useProductEditor"
 import AdminLayout from "@/layouts/AdminLayout"
 export default function ProductFormPage({ id }: { id?: string }) {
   const editor = useProductEditor(id)
-  const { existing, form, errors, update, submit, uploading } = editor
+  const { existing, form, errors, update, submit, uploading, submitError, busy } = editor
   return (
     <AdminLayout
       title={existing ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm"}
@@ -22,6 +22,7 @@ export default function ProductFormPage({ id }: { id?: string }) {
       }
     >
       <form className="product-editor" onSubmit={submit}>
+        {submitError && <p className="form-error">{submitError}</p>}
         <ProductFields form={form} errors={errors} update={update} />
         <ProductImageManager {...editor} />
         <div className="editor-actions">
@@ -31,7 +32,7 @@ export default function ProductFormPage({ id }: { id?: string }) {
           >
             Hủy
           </AButton>
-          <AButton className="primary" type="submit" disabled={uploading}>
+          <AButton className="primary" type="submit" disabled={uploading || busy}>
             Lưu sản phẩm <AIcon name="check" />
           </AButton>
         </div>

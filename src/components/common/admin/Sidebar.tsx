@@ -1,3 +1,4 @@
+import {useShop} from "@/hooks/useShop";
 import { navigate } from "@/app/router/navigation"
 import { useLocation } from "@/app/router/useLocation"
 import AIcon from "@/components/ui/AdminIcon"
@@ -13,6 +14,7 @@ export default function AdminSidebar({
   setMenu: (open: boolean) => void
   signOut: () => void
 }) {
+  const {services}=useShop();
   const { settings } = useShopSettings()
   const { pathname: path } = useLocation()
   return (
@@ -47,7 +49,7 @@ export default function AdminSidebar({
         </span>
         <div>
           <strong>{settings.owner}</strong>
-          <small>DEMO MODE</small>
+          <small>{services.mode === "demo" ? "DEMO MODE" : "QUẢN TRỊ"}</small>
         </div>
         <button title="Đăng xuất" onClick={signOut}>
           <AIcon name="logout" />

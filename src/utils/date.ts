@@ -42,3 +42,10 @@ export function nextCalendarDate(value: string): string {
   date.setUTCDate(date.getUTCDate() + 1)
   return date.toISOString().slice(0, 10)
 }
+
+/** Same instant, expressed in the shop's +07:00 timezone for date-only labels. */
+export function shopTimestamp(value: string): string {
+  const date = new Date(value)
+  if (!Number.isFinite(date.getTime())) throw new Error("Invalid shop timestamp")
+  return new Date(date.getTime() + 7 * 3600000).toISOString().replace(/Z$/, "+07:00")
+}

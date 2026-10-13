@@ -1,3 +1,5 @@
+import {useState} from "react";
+import {userMessage} from "@/services/supabase/errors";
 import AButton from "@/components/ui/AdminButton"
 import AIcon from "@/components/ui/AdminIcon"
 
@@ -14,8 +16,10 @@ export default function Confirm({
   confirm: string
   destructive?: boolean
   onClose: () => void
-  onConfirm: () => void
+  onConfirm: () => void | Promise<void>
 }) {
+  const [pending,setPending]=useState(false);const [error,setError]=useState("");
+  const confirmAction=async()=>{if(pending)return;setPending(true);setError("");try{await onConfirm()}catch(error){setError(userMessage(error))}finally{setPending(false)}};
   return (
     <div className="overlay admin-modal-overlay" onClick={onClose}>
       <section
@@ -32,13 +36,14 @@ export default function Confirm({
           </AButton>
         </div>
         <p>{copy}</p>
+        {error && <p className="form-error">{error}</p>}
         <div className="modal-actions">
           <AButton className="button-outline" onClick={onClose}>
             Quay lại
           </AButton>
           <AButton
             className={destructive ? "danger-button" : "primary"}
-            onClick={onConfirm}
+            onClick={confirmAction} disabled={pending}
           >
             {confirm}
           </AButton>

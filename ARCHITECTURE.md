@@ -1,6 +1,6 @@
 # MIRA RENT frontend
 
-Frontend được refactor từ source Figma Make hiện có, dùng React 19, TypeScript strict, Vite 8 và Tailwind CSS 4. Không thêm dependency runtime hoặc dependency kiểm thử.
+Frontend được refactor từ source Figma Make hiện có, dùng React 19, TypeScript strict, Vite 8 và Tailwind CSS 4. Backend foundation bổ sung SDK Supabase v2 cho Auth/Data/Storage; không thêm thư viện kiểm thử.
 
 ## Cấu trúc và trách nhiệm
 
@@ -73,14 +73,14 @@ Các interface nằm trong `src/services/contracts/index.ts`. Inject một AppSe
 </AppProviders>
 ```
 
-`initialState` và `initialSession` cung cấp giá trị bootstrap/cache đồng bộ. `repository.load` và `auth.hasSession` hydrate dữ liệu bất đồng bộ. Có thể dùng một ShopState rỗng làm bootstrap khi chưa có cache, rồi thay bằng dữ liệu load.
+Demo services dùng initialState/initialSession và repository persistence. Supabase services bootstrap public state, xác nhận getAccess rồi load_shop_snapshot; dữ liệu riêng của admin không lưu trong ShopState localStorage.
 
-- DataRepository: map dữ liệu database sang domain types. Một lần save bao gồm dữ liệu sản phẩm và đơn liên quan; adapter backend cần bảo đảm transaction và kiểm soát xung đột, không ghi hai bảng độc lập rồi giả định đã thành công.
+- DataRepository chỉ phục vụ demo snapshot. BackendCommands và Supabase reads dùng RPC nguyên tử cùng version/request IDs; không upsert toàn ShopState.
 - AuthAdapter: thay session demo bằng xác thực backend; credentials đã được truyền qua contract.
 - ImageStorageAdapter: thay Object URL tạm bằng URL từ storage, giữ ProductImage và coverImage contracts.
 - Giữ snapshot giá/sản phẩm cùng đơn để sửa/xóa catalogue không thay đổi lịch sử.
 
-Source này vẫn sử dụng demo auth và demo storage như bản export. Session demo không bảo vệ backend. Ảnh upload trong demo vẫn là Object URL tạm, không phải upload bền vững; chỉ metadata được lưu qua `mira-rent-demo-v2`. Backend auth/storage thực tế chưa được triển khai trong phạm vi refactor này.
+Source này vẫn sử dụng demo auth và demo storage như bản export. Session demo không bảo vệ backend. Ảnh upload trong demo vẫn là Object URL tạm, không phải upload bền vững; chỉ metadata được lưu qua `mira-rent-demo-v2`. Supabase mode đã có SDK/adapters Auth/Storage, nhưng chưa kiểm chứng dịch vụ cloud khi chưa cấu hình project.
 
 ## Bảo toàn giao diện
 
@@ -116,3 +116,11 @@ Vite dùng configLoader native để nạp plugin native trên Windows, JSON imp
 - Chưa xác minh bằng screenshot hoặc browser interactions thật: browser tích hợp không có phiên, trình duyệt local bị môi trường chặn khởi tạo. HTML/CSS regression không thay thế hoàn toàn kiểm chứng pixel và responsive bằng trình duyệt.
 
 Checkpoint trước refactor ở `D:\Downloads - Copy\MIRA RENT checkpoints\before-refactor-20261012-014244`, kèm `manifest.json` SHA-256. Workspace ban đầu không có Git repository nên sử dụng checkpoint filesystem.
+
+## Schema Supabase
+
+Thiết kế database, ERD, bốn migrations, demo seed và SQL tests nằm trong [supabase/README.md](supabase/README.md). Schema dùng RPC theo từng nghiệp vụ; boundary ghi toàn bộ ShopState đã được tách: demo persistence và Supabase commands. Frontend mặc định dùng demo adapters; các migrations chưa được áp dụng lên một Supabase project cloud.
+
+Kế hoạch phát triển backend, contracts, auth flow và các giai đoạn nghiệm thu nằm trong [BACKEND.md](BACKEND.md).
+
+Backend foundation đã có adapters Supabase và provider theo mode; xem [supabase/SETUP.md](supabase/SETUP.md). DemoShopProvider giữ snapshot persistence demo; SupabaseShopProvider gọi commands và refresh snapshot từ server, không ghi toàn ShopState. Bật live mode bằng `.env.local` sau khi migrate đủ 01–04; hiện chưa kết nối cloud thật.

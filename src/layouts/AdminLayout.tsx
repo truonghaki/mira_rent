@@ -19,8 +19,7 @@ export default function AdminLayout({
   const { logout } = useShop()
   const [menu, setMenu] = useState(false)
   const signOut = async () => {
-    await logout()
-    navigate("/admin/login", true)
+    try {await logout();navigate("/admin/login", true)}catch{/* service feedback displays the failure */}
   }
   return (
     <div className="admin-shell admin-v2">

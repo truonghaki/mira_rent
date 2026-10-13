@@ -1,4 +1,4 @@
-import { defineConfig, type HtmlTagDescriptor, type Plugin } from "vite"
+import { defineConfig, loadEnv, type HtmlTagDescriptor, type Plugin } from "vite"
 import react from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 import path from "node:path"
@@ -10,6 +10,17 @@ const projectDirectory = path.dirname(fileURLToPath(import.meta.url))
 
 // Vite config — https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
+  // Fail before Vite can place a server credential into a browser bundle.
+  const browserEnv = loadEnv(mode, projectDirectory, "VITE_")
+  const browserKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || browserEnv.VITE_SUPABASE_PUBLISHABLE_KEY || ""
+  let serverCredential = browserKey.startsWith("sb_secret_")
+  if (browserKey.split(".").length === 3) {
+    try {
+      const decoded: unknown = JSON.parse(Buffer.from(browserKey.split(".")[1], "base64url").toString("utf8"))
+      serverCredential ||= !!decoded && typeof decoded === "object" && "role" in decoded && decoded.role === "service_role"
+    } catch { /* runtime configuration validation handles malformed public keys */ }
+  }
+  if (serverCredential) throw new Error("A server credential cannot be used in VITE_SUPABASE_PUBLISHABLE_KEY.")
   // .figma/make/deploy-preview passes `--mode development` for cached-preview builds.
   const emitSourcemaps = mode === "development"
 

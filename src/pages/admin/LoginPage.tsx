@@ -1,3 +1,4 @@
+import {userMessage} from "@/services/supabase/errors";
 import { navigate } from "@/app/router/navigation"
 import AdminBrand from "@/components/common/admin/Brand"
 import AButton from "@/components/ui/AdminButton"
@@ -8,7 +9,8 @@ import { useShop } from "@/hooks/useShop"
 import { type FormEvent, useEffect, useState } from "react"
 
 export default function AdminLogin() {
-  const { authenticated, login, settings } = useShop()
+  const { authenticated, login, settings, services } = useShop()
+  const [pending,setPending]=useState(false);
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -17,17 +19,17 @@ export default function AdminLogin() {
   }, [authenticated])
   const submit = async (event: FormEvent) => {
     event.preventDefault()
+    if(pending)return;
     const validationError = validateDemoCredentials(email, password)
     if (validationError) {
       setError(validationError)
       return
     }
+    setPending(true);setError("");
     try {
       await login(email, password)
       navigate("/admin", true)
-    } catch {
-      setError("Không thể đăng nhập. Vui lòng thử lại.")
-    }
+    } catch(error) {setError(userMessage(error))}finally{setPending(false)}
   }
   return (
     <main className="login-page">
@@ -43,7 +45,7 @@ export default function AdminLogin() {
       <section className="login-form">
         <form onSubmit={submit}>
           <span className="demo-badge">
-            DEMO MODE · KHÔNG PHẢI XÁC THỰC BẢO MẬT
+            {services.mode === "demo" ? "DEMO MODE · KHÔNG PHẢI XÁC THỰC BẢO MẬT" : "MIRA RENT · QUẢN TRỊ"}
           </span>
           <p className="eyebrow">MIRA RENT · QUẢN TRỊ</p>
           <h1>
@@ -52,8 +54,7 @@ export default function AdminLogin() {
             <em>mừng bạn trở lại.</em>
           </h1>
           <p>
-            Phiên đăng nhập mô phỏng được lưu trong session trình duyệt. Có thể
-            thay bằng Supabase Auth sau này.
+            {services.mode === "demo" ? "Phiên đăng nhập mô phỏng được lưu trong session trình duyệt. Có thể thay bằng Supabase Auth sau này." : "Đăng nhập để quản lý cửa hàng của bạn."}
           </p>
           <label>
             Email quản trị
@@ -76,7 +77,7 @@ export default function AdminLogin() {
             />
           </label>
           {error && <p className="form-error">{error}</p>}
-          <AButton className="primary login-button" type="submit">
+          <AButton className="primary login-button" type="submit" disabled={pending}>
             Đăng nhập <AIcon name="arrow" />
           </AButton>
           <button

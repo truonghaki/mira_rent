@@ -1,3 +1,5 @@
+import {useShop} from "@/hooks/useShop";
+import {userMessage} from "@/services/supabase/errors";
 import AButton from "@/components/ui/AdminButton"
 import AIcon from "@/components/ui/AdminIcon"
 import Field from "@/components/ui/Field"
@@ -9,11 +11,12 @@ import { type FormEvent, useState } from "react"
 
 export default function SettingsPage() {
   const { settings, saveSettings, resetDemo } = useShopSettings()
+  const {services,busy}=useShop();
   const [form, setForm] = useState(settings)
   const { toast, setToast } = useToast(2200)
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault()
-    saveSettings(form)
+    try {await saveSettings(form)}catch(error){setToast(userMessage(error));return}
     setToast("Đã lưu cài đặt cửa hàng")
   }
   return (
@@ -83,11 +86,10 @@ export default function SettingsPage() {
           </Field>
         </div>
         <div className="storage-note">
-          Demo Settings Adapter: dữ liệu cấu trúc nhỏ được lưu trong
-          localStorage của trình duyệt này. Đây không phải lưu trữ production.
+          {services.mode === "demo" ? "Demo Settings Adapter: dữ liệu cấu trúc nhỏ được lưu trong localStorage của trình duyệt này. Đây không phải lưu trữ production." : "Thông tin cửa hàng được lưu và dùng chung trên website."}
         </div>
         <div className="editor-actions">
-          <AButton
+          {services.mode === "demo" && <AButton
             className="danger-link"
             onClick={async () => {
               if (window.confirm("Khôi phục toàn bộ dữ liệu demo ban đầu?")) {
@@ -101,8 +103,8 @@ export default function SettingsPage() {
             }}
           >
             Khôi phục dữ liệu demo
-          </AButton>
-          <AButton className="primary" type="submit">
+          </AButton>}
+          <AButton className="primary" type="submit" disabled={busy}>
             Lưu cài đặt <AIcon name="check" />
           </AButton>
         </div>

@@ -14,6 +14,7 @@ import { dateText } from "@/utils/date"
 
 export default function RentalsPage() {
   const {
+    requestId,
     products,
     reserveProduct,
     startRental,
@@ -129,11 +130,11 @@ export default function RentalsPage() {
         <RentalSheet
           action={action}
           onClose={() => setAction(null)}
-          onSubmit={(draft) => {
+          onSubmit={async (draft) => {
             if (action.type === "reserve" || action.type === "direct")
-              reserveProduct(action.product.id, draft, action.type === "direct")
+              await reserveProduct(action.product.id, draft, action.type === "direct",requestId)
             if (action.type === "start" && action.order)
-              startRental(action.order.id, draft)
+              await startRental(action.order.id, draft)
             done(
               action.type === "reserve"
                 ? "Đã tạo lịch đặt mới"
@@ -147,8 +148,8 @@ export default function RentalsPage() {
           product={action.product}
           order={action.order}
           onClose={() => setAction(null)}
-          onSubmit={(draft) => {
-            completeRental(action.order!.id, draft)
+          onSubmit={async (draft) => {
+            await completeRental(action.order.id, draft)
             done("Đã hoàn tất đơn và ghi nhận doanh thu")
           }}
         />
@@ -160,8 +161,8 @@ export default function RentalsPage() {
           confirm="Xác nhận hủy"
           destructive
           onClose={() => setCancel(null)}
-          onConfirm={() => {
-            cancelReservation(cancel.id)
+          onConfirm={async () => {
+            await cancelReservation(cancel.id)
             setCancel(null)
             done("Đã hủy lịch đặt")
           }}
