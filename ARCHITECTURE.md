@@ -23,7 +23,7 @@ Frontend được refactor từ source Figma Make hiện có, dùng React 19, Ty
 | `src/hooks` | Shared context và toast lifecycle |
 | `src/utils` | Currency, calendar dates và slug |
 | `src/data` | Demo fixtures và các URL ảnh gốc |
-| `src/styles` | CSS tokens và global rules |
+| `src/styles` | CSS tokens, global rules và điều chỉnh typography/mobile |
 
 `src/App.tsx`, `src/AdminApp.tsx`, `src/store.tsx` và `src/data.ts` là các entry tương thích nhỏ. Module mới import trực tiếp nơi sở hữu chức năng. Không còn UI hoặc nghiệp vụ lớn trong các entry này.
 
@@ -86,6 +86,8 @@ Source này vẫn sử dụng demo auth và demo storage như bản export. Sess
 
 Font imports và Tailwind ở `src/index.css`. CSS tokens tách vào `styles/tokens.css`; các global rules, responsive overrides và animation nằm trong `styles/global.css` theo đúng thứ tự gốc. Không chuyển sang CSS Modules hoặc đổi tên class vì selector phụ thuộc DOM và thứ tự cascade. Loại riêng tài liệu này khỏi quét Tailwind để nội dung hướng dẫn không sinh thêm utility CSS.
 
+`styles/readability.css` được import sau global styles để áp dụng điều chỉnh cỡ chữ đã được yêu cầu: nhãn trạng thái sản phẩm lớn hơn, chữ phụ admin 12–13px, form mobile 16px, vùng bấm tối thiểu 44px và thanh điều hướng có khoảng trống safe area. Trên mobile, danh sách sản phẩm hiển thị cả giá và bộ chọn trạng thái; bộ lọc ngày và các thẻ doanh thu dùng grid có cột `minmax(0, 1fr)` để hạn chế tràn chiều ngang. Styles gốc được giữ làm baseline; stylesheet production sau điều chỉnh typography sẽ có hash mới.
+
 SVG paths được gom lại, giữ hai biến thể menu customer/admin và hai bộ nhãn trạng thái khác nhau. Nội dung, ảnh, font, màu sắc, animation, hero timing và media queries giữ nguyên. Chỉ bổ sung nhãn ARIA cho một số nút icon và hỗ trợ Enter trên product cards.
 
 ## Lệnh kiểm tra
@@ -111,7 +113,7 @@ Vite dùng configLoader native để nạp plugin native trên Windows, JSON imp
 - 55 tests: pricing, transitions, snapshot preservation, revenue, product/image validation, filtering, routing, demo persistence/auth, serial writes, và render regression.
 - 21 HTML render snapshots lấy từ checkpoint gốc: các trang customer/admin và rental/history modals. Markup khớp sau khi loại các annotation accessibility đã thêm.
 - Stylesheet source được tái ghép và kiểm tra hash, bảo toàn font imports, CSS rules, media queries và animations theo thứ tự gốc.
-- CSS production có SHA-256 `b4c6b09e3d01afe792ffe97feabdf7c855de264b182822f4213de21f505e1402`, trùng baseline.
+- CSS production trước điều chỉnh typography có SHA-256 `b4c6b09e3d01afe792ffe97feabdf7c855de264b182822f4213de21f505e1402`, trùng baseline. Hash này là checkpoint refactor; không dùng để khẳng định stylesheet có `readability.css` trùng pixel với baseline.
 - HTTP smoke check cho 15 URL/deep links đạt; route resolution được kiểm thử riêng.
 - Chưa xác minh bằng screenshot hoặc browser interactions thật: browser tích hợp không có phiên, trình duyệt local bị môi trường chặn khởi tạo. HTML/CSS regression không thay thế hoàn toàn kiểm chứng pixel và responsive bằng trình duyệt.
 

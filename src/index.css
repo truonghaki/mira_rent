@@ -3,6 +3,7 @@
 
 @import "./styles/tokens.css";
 @import "./styles/global.css";
+@import "./styles/readability.css";
 
 @source not "../ARCHITECTURE.md";
 @source not "../supabase";
