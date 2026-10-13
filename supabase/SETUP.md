@@ -41,6 +41,16 @@ pnpm dev
 
 Ở Supabase mode, đăng nhập bằng email/password Auth thật. Nhãn mode và lưu trữ đổi theo chế độ, layout giữ nguyên. Khách đọc catalogue/settings; admin được xác nhận membership mới đọc orders và gọi writes.
 
+## Deploy trên Vercel
+
+Trong Vercel project, vào Settings → Environment Variables và thêm `VITE_BACKEND_MODE=supabase`, `VITE_SUPABASE_URL` và `VITE_SUPABASE_PUBLISHABLE_KEY` cho môi trường Production. URL/key phải thuộc cùng project Supabase đã chạy đủ bốn migrations. `.env.local` chỉ cấu hình trên máy phát triển; không được đưa lên GitHub.
+
+Sau khi thay đổi env, Redeploy để Vite build lại với cấu hình mới. Chỉ dùng publishable/anon key; không dùng secret/service-role key trong các biến `VITE_*`.
+
+`vercel.json` ở thư mục gốc cấu hình rewrite các deep links về `/index.html`, theo [hướng dẫn Vite SPA của Vercel](https://vercel.com/docs/frameworks/frontend/vite#using-vite-to-make-spas). React tiếp tục xử lý URL hiện tại; mở trực tiếp hoặc refresh `/admin`, `/admin/login`, `/san-pham/1` và các route khác phải tải được ứng dụng. Cấu hình này không thay thế Supabase Auth hoặc quyền admin trong database.
+
+Sau deployment, kiểm tra HTTP bằng `node scripts/check-routes.mjs https://TEN-PROJECT.vercel.app`; script xác minh status thành công và HTML có React root. Sau đó kiểm tra đăng nhập và các thao tác bằng tài khoản Auth thật.
+
 ## 3. Implementation hiện có
 
 | File | Trách nhiệm |
